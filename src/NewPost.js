@@ -34,7 +34,7 @@ const NewPost = ({
             ></textarea>
           </label>
         </div>
-        <button type="submit">Create Post</button>
+        <button className="btn success" type="submit">Create Post</button>
       </form>
     </main>
   )

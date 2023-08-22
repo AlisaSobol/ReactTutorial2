@@ -1,36 +1,43 @@
 import Header from './Header';
 import Home from './Home';
 import NewPost from './NewPost';
+import EditPost from './EditPost';
 import PostPage from './PostPage';
 import About from './About';
 import Missing from './Missing';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import api from './api/posts';
 
 function App() {
-  const POSTS = [{
-    id: 1,
-    title: "Post title 1",
-    datetime: "July 01, 2021 11:17:36 AM",
-    body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-  },{
-    id: 2,
-    title: "Post title 2",
-    datetime: "July 02, 2021 10:10:35 AM",
-    body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-  },{
-    id: 3,
-    title: "Post title 3",
-    datetime: "July 03, 2021 10:10:35 AM",
-    body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-  }];
-  const [ posts, setPosts ] = useState(POSTS);
+  const [ posts, setPosts ] = useState([]);
   const [ search, setSearch ] = useState('');
   const [ searchResults, setSearchResults ] = useState([]);
-  const [ postTitle,setPostTitle ] = useState('');
-  const [ postBody,setPostBody ] = useState(''); 
+  const [ postTitle, setPostTitle ] = useState('');
+  const [ postBody, setPostBody ] = useState(''); 
+  const [ editTitle,setEditTitle ] = useState('');
+  const [ editBody,setEditBody ] = useState(''); 
   const history = useHistory();
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await api.get('/posts');
+        setPosts(response.data);
+      } catch (err) {
+        if (err.response) {
+          console.log('Error data:', err.response.data);
+          console.log('Error status:', err.response.status);
+          console.log('Error headers:', err.response.headers);
+        } else {
+          console.log(`Error: ${err.message}`);
+        }
+      }
+    } 
+
+    fetchPosts();
+  }, [])
 
   useEffect(() => {
     const filteredPosts = posts.filter(post => 
@@ -41,13 +48,7 @@ function App() {
     setSearchResults(filteredPosts)
   }, [posts, search])
 
-  const handleDelete = (id) => {
-    const postsList = posts.filter(post => post.id !== id);
-    setPosts(postsList); 
-    history.push('/');
-  }
-
-  const handleCreatePost = (e) => {
+  const handleCreatePost = async (e) => {
     e.preventDefault();
 
     const id = posts.length ? (posts[posts.length -1].id + 1) : 1;
@@ -59,19 +60,61 @@ function App() {
       body: postBody
     }
 
-    setPosts([...posts, postObj]); 
-    setPostTitle('');
-    setPostBody('');
-    history.push('/');
+    try {
+      const response = await api.post('/posts', postObj)
+
+      setPosts([...posts, response.data]); 
+      setPostTitle('');
+      setPostBody('');
+
+      history.push('/');
+    } catch (err) {
+      console.log(`Error: ${err.message}`);
+    }
+  }
+
+  const handleEdit = async (id) => {
+    const datetime = format(new Date(), 'MMMM dd, yyyy pp' );
+    const postObj = {
+      id,
+      title: editTitle,
+      datetime,
+      body: editBody
+    }
+
+    try {
+      const response = await api.put(`/posts/${id}`, postObj)
+
+      setPosts(posts.map(post => post.id === id ? {...response.data} : post))
+      setEditBody('');
+      setEditTitle('');
+
+      history.push('/');
+    } catch (err) {
+      console.log(`Error: ${err.message}`);
+    }
+  }
+
+  const handleDelete = async (id) => {
+    const postsList = posts.filter(post => post.id !== id);
+
+    try {
+      const response = await api.delete(`/posts/${id}`);
+
+      setPosts(postsList); 
+      history.push('/');
+    } catch (err) {
+      console.log(`Error: ${err.message}`);
+    }
   }
 
   return (
     <div className="App">
-      <Header title="React JS Blog" search={search} setSearch={setSearch}/>
+      <Header title="React JS Blog" />
       <Switch >
         
         <Route exact path="/" >
-          <Home posts={searchResults} />
+          <Home posts={searchResults} search={search} setSearch={setSearch} />
         </Route>
 
         <Route exact path="/post">
@@ -81,6 +124,17 @@ function App() {
             setPostTitle={setPostTitle}
             postBody={postBody}
             setPostBody={setPostBody}
+          />
+        </Route>
+
+        <Route exact path="/edit/:id">
+          <EditPost 
+            posts={posts}
+            handleEdit={handleEdit}
+            editTitle={editTitle}
+            setEditTitle={setEditTitle}
+            editBody={editBody}
+            setEditBody={setEditBody}
           />
         </Route>
 
