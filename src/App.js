@@ -9,6 +9,9 @@ import { Route, Switch, useHistory } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import api from './api/posts';
+import useWindowSize from './hooks/useWindowSize';
+import useAxiosFetch from './hooks/useAxiosFetch';
+
 
 function App() {
   const [ posts, setPosts ] = useState([]);
@@ -19,25 +22,13 @@ function App() {
   const [ editTitle,setEditTitle ] = useState('');
   const [ editBody,setEditBody ] = useState(''); 
   const history = useHistory();
+  const { width } = useWindowSize();
+
+  const { data, fetchError, isLoading } = useAxiosFetch('http://localhost:3500/posts');
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await api.get('/posts');
-        setPosts(response.data);
-      } catch (err) {
-        if (err.response) {
-          console.log('Error data:', err.response.data);
-          console.log('Error status:', err.response.status);
-          console.log('Error headers:', err.response.headers);
-        } else {
-          console.log(`Error: ${err.message}`);
-        }
-      }
-    } 
-
-    fetchPosts();
-  }, [])
+    setPosts(data);
+  }, [data])
 
   useEffect(() => {
     const filteredPosts = posts.filter(post => 
@@ -110,11 +101,17 @@ function App() {
 
   return (
     <div className="App">
-      <Header title="React JS Blog" />
+      <Header title="React JS Blog" width={width}/>
       <Switch >
         
         <Route exact path="/" >
-          <Home posts={searchResults} search={search} setSearch={setSearch} />
+          <Home 
+            posts={searchResults} 
+            search={search} 
+            setSearch={setSearch} 
+            fetchError={fetchError}
+            isLoading={isLoading}
+          />
         </Route>
 
         <Route exact path="/post">
