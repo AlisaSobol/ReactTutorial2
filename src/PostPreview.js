@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const Post = ({post}) => {
+const PostPreview = ({post}) => {
   return (
     <article>
       <h2>
@@ -15,4 +15,4 @@ const Post = ({post}) => {
   )
 }
 
-export default Post
+export default PostPreview

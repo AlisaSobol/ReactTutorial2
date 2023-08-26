@@ -1,10 +1,10 @@
-import Post from "./Post";
+import PostPreview from "./PostPreview";
 
 const Feed = ({posts}) => {
   return (
     <>
       {posts.map(post => (
-        <Post key={post.id } post={post} />
+        <PostPreview key={post.id } post={post} />
       ))}
     </>
   )
