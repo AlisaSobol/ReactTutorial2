@@ -1,14 +1,14 @@
-import Header from './Header';
 import Home from './Home';
 import NewPost from './NewPost';
 import EditPost from './EditPost';
 import PostPage from './PostPage';
 import About from './About';
 import Missing from './Missing';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { useEffect } from "react";
 import useAxiosFetch from './hooks/useAxiosFetch';
 import { useStoreActions } from 'easy-peasy';
+import Layout from "./Layout";
 
 function App() {
   const setPosts = useStoreActions(actions => actions.setPosts);
@@ -18,28 +18,19 @@ function App() {
     setPosts(data);
   }, [data, setPosts])
 
-
   return (
-    <div className="App">
-      <Header title="React JS Blog"/>
-      <Switch >
-        
-        <Route exact path="/">
-          <Home fetchError={fetchError} isLoading={isLoading} />
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home fetchError={fetchError} isLoading={isLoading} />} />
+        <Route path="post">
+          <Route index element={<NewPost />} />
+          <Route path=":id" element={<PostPage />} />
         </Route>
-
-        <Route exact path="/post" component={NewPost} />
-
-        <Route exact path="/edit/:id" component={EditPost} />
-
-        <Route path="/post/:id" component={PostPage} />
-
-        <Route path="/about" component={About} />
-
-        <Route path="*" component={Missing} />
-
-      </Switch>
-    </div>
+        <Route path="edit/:id" element={<EditPost />} />
+        <Route path="about" element={<About />} />
+        <Route path="*" element={<Missing />} />
+      </Route>
+    </Routes>
   );
 }
 

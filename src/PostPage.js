@@ -1,22 +1,22 @@
-import { useParams, Link, useHistory } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useStoreActions, useStoreState } from 'easy-peasy';
 
 const PostPage = () => {
   const { id } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();
   const deletePost = useStoreActions(actions => actions.deletePost);
   const getPostById = useStoreState(state => state.getPostById);
   const post = getPostById(id);
 
   const handleDelete = id => {
     deletePost(id);
-    history.push('/')
+    navigate('/')
   }
 
   return (
     <main className="post-page">
       <article >
-        {post && 
+        {post &&
           <>
             <h2>{post.title}</h2>
             <p className="date">{post.datetime}</p>
@@ -27,7 +27,7 @@ const PostPage = () => {
             </div>
           </>
         }
-        {!post && 
+        {!post &&
           <>
             <h2>Post Not Found...</h2>
             <p>Well, that's disappointing back to <Link to="/"> Home page </Link></p>

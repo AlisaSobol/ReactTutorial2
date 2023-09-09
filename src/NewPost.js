@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useStoreActions, useStoreState } from 'easy-peasy'; 
+import { useStoreActions, useStoreState } from 'easy-peasy';
 
 const NewPost = () => {
   const posts = useStoreState(state => state.posts);
   const savePost = useStoreActions(actions => actions.savePost);
   const [ postTitle, setPostTitle ] = useState('');
-  const [ postBody, setPostBody ] = useState(''); 
-  const history = useHistory();
+  const [ postBody, setPostBody ] = useState('');
+  const navigate = useNavigate();
 
   const handleCreatePost = (e) => {
     e.preventDefault();
@@ -25,11 +25,11 @@ const NewPost = () => {
     savePost(postObj)
     setPostTitle('');
     setPostBody('');
-    history.push('/');
+    navigate('/');
   }
 
   return (
-    <main className="new-post-page"> 
+    <main className="new-post-page">
       <h2>New Post</h2>
       <form className="new-post-form" onSubmit={handleCreatePost}>
         <div>
@@ -40,19 +40,19 @@ const NewPost = () => {
               name="title"
               value={postTitle}
               onChange={(e) => setPostTitle(e.target.value)}
-              required 
+              required
             />
           </label>
         </div>
         <div>
           <label>
             <p>Post text:</p>
-            <textarea 
+            <textarea
               name="text"
               rows="10"
               value={postBody}
               onChange={(e) => setPostBody(e.target.value)}
-              required 
+              required
             ></textarea>
           </label>
         </div>
